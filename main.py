@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Optional
 
 import typer
@@ -6,7 +5,6 @@ import yaml
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
 from rich.console import Console
-from rich.progress import track
 
 from posting_app.database import create_database, create_db_and_tables, PostingRepository
 from posting_app.services import PostingServiceFactory
@@ -51,73 +49,67 @@ def main(config_path: str):
     create_db_and_tables()
     console.log('Database loaded', style='italic bold green')
 
-    while True:
-        if config.zonaprop_full_url:
-            zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
-                pages=config.pages,
-                full_url=config.zonaprop_full_url,
-            )
-            zonaprop_posting_service.scrap_and_create_postings()
-
-        if config.argenprop_full_url:
-            argenprop_posting_service = PostingServiceFactory.build_for_argenprop(
-                pages=config.pages,
-                full_url=config.argenprop_full_url,
-            )
-            argenprop_posting_service.scrap_and_create_postings()
-
-        if config.mercadolibre_full_url:
-            mercadolibre_posting_service = PostingServiceFactory.build_for_mercadolibre(
-                pages=config.pages,
-                full_url=config.mercadolibre_full_url,
-            )
-            mercadolibre_posting_service.scrap_and_create_postings()
-
-        if config.la_voz_full_url:
-            la_voz_posting_service = PostingServiceFactory.build_for_la_voz(
-                pages=config.pages,
-                full_url=config.la_voz_full_url,
-            )
-            la_voz_posting_service.scrap_and_create_postings()
-
-        if config.properati_full_url:
-            properati_posting_service = PostingServiceFactory.build_for_properati(
-                pages=config.pages,
-                full_url=config.properati_full_url,
-            )
-            properati_posting_service.scrap_and_create_postings()
-
-        console.log('Postings scrapped', style='italic bold green')
-
-        # SEND POSTINGS
-        posting_repository = PostingRepository()
-        unsent_postings = posting_repository.get_unsent_postings()
-
-        telegram_service = TelegramService(
-            bot_token=config.bot_token,
-            chat_room=config.chat_room,
+    if config.zonaprop_full_url:
+        zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
+            pages=config.pages,
+            full_url=config.zonaprop_full_url,
         )
-        console.log(f'About to send [u]{len(unsent_postings)}[/u] postings')
-        for posting in track(unsent_postings, description='Sending postings...'):
-            msg_text = telegram_service.format_posting_to_message(posting)
-            sent = telegram_service.send_telegram_message(msg_text)
-            if sent:
-                posting_repository.set_posting_as_sent(posting.sha)
-            else:
-                console.log(
-                    (
-                        '[bold u]WARNING[/bold u]: '
-                        f'Unable to send {posting.title}. '
-                        'I\'m going to try later though, [u]don\'t panic[/u]'
-                    ),
-                    style='yellow'
-                )
-        console.log('Postings sent', style='italic bold green')
+        zonaprop_posting_service.scrap_and_create_postings()
 
-        if not config.persist:
-            break
+    if config.argenprop_full_url:
+        argenprop_posting_service = PostingServiceFactory.build_for_argenprop(
+            pages=config.pages,
+            full_url=config.argenprop_full_url,
+        )
+        argenprop_posting_service.scrap_and_create_postings()
 
-        sleep(config.sleep_time)
+    if config.mercadolibre_full_url:
+        mercadolibre_posting_service = PostingServiceFactory.build_for_mercadolibre(
+            pages=config.pages,
+            full_url=config.mercadolibre_full_url,
+        )
+        mercadolibre_posting_service.scrap_and_create_postings()
+
+    if config.la_voz_full_url:
+        la_voz_posting_service = PostingServiceFactory.build_for_la_voz(
+            pages=config.pages,
+            full_url=config.la_voz_full_url,
+        )
+        la_voz_posting_service.scrap_and_create_postings()
+
+    if config.properati_full_url:
+        properati_posting_service = PostingServiceFactory.build_for_properati(
+            pages=config.pages,
+            full_url=config.properati_full_url,
+        )
+        properati_posting_service.scrap_and_create_postings()
+
+    console.log('Postings scrapped', style='italic bold green')
+
+    # SEND POSTINGS
+    posting_repository = PostingRepository()
+    unsent_postings = posting_repository.get_unsent_postings()
+
+    telegram_service = TelegramService(
+        bot_token=config.bot_token,
+        chat_room=config.chat_room,
+    )
+    console.log(f'About to send [u]{len(unsent_postings)}[/u] postings')
+    for posting in unsent_postings:
+        msg_text = telegram_service.format_posting_to_message(posting)
+        sent = telegram_service.send_telegram_message(msg_text)
+        if sent:
+            posting_repository.set_posting_as_sent(posting.sha)
+        else:
+            console.log(
+                (
+                    '[bold u]WARNING[/bold u]: '
+                    f'Unable to send {posting.title}. '
+                    'I\'m going to try later though, [u]don\'t panic[/u]'
+                ),
+                style='yellow'
+            )
+    console.log('Postings sent', style='italic bold green')
 
 
 if __name__ == '__main__':
