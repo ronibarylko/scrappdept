@@ -1,7 +1,8 @@
-from typing import Optional, List
+from typing import List
 
 from rich.console import Console
 
+from posting_app.database import Posting
 from .gateways import (
     ArgenpropGateway,
     BaseGateway,
@@ -18,18 +19,17 @@ from .parsers import (
     ProperatiParser,
     ZonapropParser,
 )
-from posting_app.database import Posting
 
 console = Console()
 
 
 class ScraperService:
     def __init__(
-        self,
-        pages: int,
-        url: str,
-        gateway: BaseGateway,
-        parser: BaseParser,
+            self,
+            pages: int,
+            url: str,
+            gateway: BaseGateway,
+            parser: BaseParser,
     ):
         self._pages = pages
         self._url = url
@@ -58,9 +58,9 @@ class ScraperService:
 class ScraperServiceFactory:
     @classmethod
     def build_for_zonaprop(
-        cls,
-        pages: int,
-        full_url: str
+            cls,
+            pages: int,
+            full_url: str
     ) -> ScraperService:
         return ScraperService(
             pages=pages,
@@ -71,9 +71,9 @@ class ScraperServiceFactory:
 
     @classmethod
     def build_for_argenprop(
-        cls,
-        pages: int,
-        full_url: str
+            cls,
+            pages: int,
+            full_url: str
     ) -> ScraperService:
         return ScraperService(
             pages=pages,
@@ -84,9 +84,9 @@ class ScraperServiceFactory:
 
     @classmethod
     def build_for_mercadolibre(
-        cls,
-        pages: int,
-        full_url: str
+            cls,
+            pages: int,
+            full_url: str
     ) -> ScraperService:
         return ScraperService(
             pages=pages,
@@ -97,9 +97,9 @@ class ScraperServiceFactory:
 
     @classmethod
     def build_for_la_voz(
-        cls,
-        pages: int,
-        full_url: str
+            cls,
+            pages: int,
+            full_url: str
     ) -> ScraperService:
         return ScraperService(
             pages=pages,
@@ -110,9 +110,9 @@ class ScraperServiceFactory:
 
     @classmethod
     def build_for_properati(
-        cls,
-        pages: int,
-        full_url: str
+            cls,
+            pages: int,
+            full_url: str
     ) -> ScraperService:
         return ScraperService(
             pages=pages,

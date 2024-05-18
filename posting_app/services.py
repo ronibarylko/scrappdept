@@ -1,7 +1,7 @@
 from rich.console import Console
 
-from .database import PostingRepository
 from scraper_app.services import ScraperService, ScraperServiceFactory
+from .database import PostingRepository
 
 console = Console()
 

@@ -1,8 +1,8 @@
-import yaml
 from time import sleep
 from typing import Optional
 
 import typer
+import yaml
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
 from rich.console import Console
@@ -43,16 +43,15 @@ def main(config_path: str):
         )
         return
     console.log('Configuration read correctly', style='italic bold green')
-    
+
     # CREATE DATABASE
-    create_database(config.database_filename)  
+    create_database(config.database_filename)
 
     # LOAD DATABASE
     create_db_and_tables()
     console.log('Database loaded', style='italic bold green')
 
-    while(True):
-        # SCRAP POSTINGS
+    while True:
         if config.zonaprop_full_url:
             zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
                 pages=config.pages,
@@ -117,7 +116,7 @@ def main(config_path: str):
 
         if not config.persist:
             break
-        
+
         sleep(config.sleep_time)
 
 

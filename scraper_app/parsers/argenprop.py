@@ -1,9 +1,7 @@
 from typing import Set
 
-from bs4 import BeautifulSoup
-
-from .base import BaseParser
 from posting_app.database import Posting, PostingRepository
+from .base import BaseParser
 
 
 class ArgenpropParser(BaseParser):

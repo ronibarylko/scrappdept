@@ -8,3 +8,5 @@ config.json
 config.yaml
 *.db
 *.sqlite3
+
+.idea/
