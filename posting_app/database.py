@@ -70,6 +70,16 @@ class PostingRepository:
 
             return postings
 
+    def get_all_postings(self) -> List[Posting]:
+        with Session(engine) as session:
+            statement = select(Posting)
+            postings = [
+                posting for posting
+                in session.exec(statement)
+            ]
+
+            return postings
+
     def set_posting_as_sent(self, sha: str):
         with Session(engine) as session:
             statement = select(Posting).where(Posting.sha == sha)

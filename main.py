@@ -19,12 +19,7 @@ class Config(BaseModel):
     bot_token: str
     chat_room: str
     persist: Optional[bool] = False
-    zonaprop_base_url: Optional[str] = None
     zonaprop_full_url: Optional[str] = None
-    argenprop_full_url: Optional[str] = None
-    mercadolibre_full_url: Optional[str] = None
-    la_voz_full_url: Optional[str] = None
-    properati_full_url: Optional[str] = None
     database_filename: Optional[str] = 'scrapdep'
 
 
@@ -55,34 +50,6 @@ def main(config_path: str):
             full_url=config.zonaprop_full_url,
         )
         zonaprop_posting_service.scrap_and_create_postings()
-
-    if config.argenprop_full_url:
-        argenprop_posting_service = PostingServiceFactory.build_for_argenprop(
-            pages=config.pages,
-            full_url=config.argenprop_full_url,
-        )
-        argenprop_posting_service.scrap_and_create_postings()
-
-    if config.mercadolibre_full_url:
-        mercadolibre_posting_service = PostingServiceFactory.build_for_mercadolibre(
-            pages=config.pages,
-            full_url=config.mercadolibre_full_url,
-        )
-        mercadolibre_posting_service.scrap_and_create_postings()
-
-    if config.la_voz_full_url:
-        la_voz_posting_service = PostingServiceFactory.build_for_la_voz(
-            pages=config.pages,
-            full_url=config.la_voz_full_url,
-        )
-        la_voz_posting_service.scrap_and_create_postings()
-
-    if config.properati_full_url:
-        properati_posting_service = PostingServiceFactory.build_for_properati(
-            pages=config.pages,
-            full_url=config.properati_full_url,
-        )
-        properati_posting_service.scrap_and_create_postings()
 
     console.log('Postings scrapped', style='italic bold green')
 
