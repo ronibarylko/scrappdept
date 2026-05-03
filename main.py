@@ -1,3 +1,5 @@
+import logging
+from enum import Enum
 from typing import Optional
 
 import typer
@@ -13,17 +15,28 @@ from telegram_app.services import TelegramService
 console = Console()
 
 
+class OutputMode(str, Enum):
+    telegram = "telegram"
+    console = "console"
+
+
 class Config(BaseModel):
     pages: Optional[int] = 3
     sleep_time: Optional[int] = 5
-    bot_token: str
-    chat_room: str
+    bot_token: Optional[str] = None
+    chat_room: Optional[str] = None
     persist: Optional[bool] = False
     zonaprop_full_url: Optional[str] = None
     database_filename: Optional[str] = 'scrapdep'
 
 
-def main(config_path: str):
+def main(
+        config_path: str,
+        output: OutputMode = typer.Option(OutputMode.console, help="Destino de los postings: telegram o console"),
+        log_level: str = typer.Option("WARNING", help="Nivel de logging: DEBUG, INFO, WARNING, ERROR"),
+):
+    logging.basicConfig(level=log_level.upper(), format='%(name)s %(levelname)s: %(message)s')
+
     # LOAD CONFIG
     with open(config_path) as config_json:
         config_dict = yaml.safe_load(config_json)
@@ -57,26 +70,35 @@ def main(config_path: str):
     posting_repository = PostingRepository()
     unsent_postings = posting_repository.get_unsent_postings()
 
-    telegram_service = TelegramService(
-        bot_token=config.bot_token,
-        chat_room=config.chat_room,
-    )
     console.log(f'About to send [u]{len(unsent_postings)}[/u] postings')
-    for posting in unsent_postings:
-        msg_text = telegram_service.format_posting_to_message(posting)
-        sent = telegram_service.send_telegram_message(msg_text)
-        if sent:
-            posting_repository.set_posting_as_sent(posting.sha)
-        else:
-            console.log(
-                (
-                    '[bold u]WARNING[/bold u]: '
-                    f'Unable to send {posting.title}. '
-                    'I\'m going to try later though, [u]don\'t panic[/u]'
-                ),
-                style='yellow'
-            )
-    console.log('Postings sent', style='italic bold green')
+
+    if output == OutputMode.console:
+        for posting in unsent_postings:
+            console.print(posting)
+    else:
+        if not config.bot_token or not config.chat_room:
+            console.log('[bold u]ERROR[/bold u]: bot_token y chat_room son requeridos para modo telegram', style='red')
+            return
+        telegram_service = TelegramService(
+            bot_token=config.bot_token,
+            chat_room=config.chat_room,
+        )
+        for posting in unsent_postings:
+            msg_text = telegram_service.format_posting_to_message(posting)
+            sent = telegram_service.send_telegram_message(msg_text)
+            if sent:
+                posting_repository.set_posting_as_sent(posting.sha)
+            else:
+                console.log(
+                    (
+                        '[bold u]WARNING[/bold u]: '
+                        f'Unable to send {posting.title}. '
+                        'I\'m going to try later though, [u]don\'t panic[/u]'
+                    ),
+                    style='yellow'
+                )
+
+    console.log('Done', style='italic bold green')
 
 
 if __name__ == '__main__':

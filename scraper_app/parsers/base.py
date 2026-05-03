@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from hashlib import sha1
 from typing import Set
@@ -5,6 +6,8 @@ from typing import Set
 from bs4 import BeautifulSoup
 
 from posting_app.database import Posting
+
+logger = logging.getLogger(__name__)
 
 
 class BaseParser(ABC):

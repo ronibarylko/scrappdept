@@ -10,3 +10,4 @@ config.yaml
 *.sqlite3
 
 .idea/
+*.iml

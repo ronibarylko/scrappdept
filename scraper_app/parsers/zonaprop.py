@@ -1,15 +1,18 @@
+import logging
 from typing import Set
 
 from posting_app.database import Posting, PostingRepository
 from .base import BaseParser
 
+logger = logging.getLogger(__name__)
+
 
 class ZonapropParser(BaseParser):
-    base_info_class = 'PostingCardLayout-sc-i1odl-0'
+    base_info_class = 'postingCardLayout-module__posting-card-layout'
     base_info_tag = 'div'
     link_regex = 'a.go-to-posting'
-    price_regex = 'div.Price-sc-12dh9kl-3'
-    description_regex = 'h3.PostingDescription-sc-i1odl-11'
+    price_div_class = 'postingPrices-module__price-container'
+    description_div_class = 'postingCard-module__posting-description'
     location_regex = "div.LocationBlock-sc-ge2uzh-1"
     _base_url = 'https://www.zonaprop.com.ar'
 
@@ -19,16 +22,16 @@ class ZonapropParser(BaseParser):
         base_info_soaps = self.soup.find_all(
             self.base_info_tag, class_=self.base_info_class)
 
+        logger.debug(f'Found {len(base_info_soaps)} items on page')
+
         for base_info_soap in base_info_soaps:
             try:
                 link_text = base_info_soap.attrs['data-to-posting']
-                price_container = base_info_soap.select(self.price_regex)[0]
-                description_container = base_info_soap.select(
-                    self.description_regex)[0].a
-                location_container = base_info_soap.select(
-                    self.location_regex)[0].select("div.postingAddress")[0]
+                price_container = base_info_soap.find("div", class_=self.price_div_class)
+                description_container = base_info_soap.find("h2", class_=self.description_div_class)
+                location_container = base_info_soap.find("div", class_="postingLocations-module__location-block")
             except Exception as e:
-                print('ERROR: the regex didnt work')
+                logger.debug(f'Skipping item, parse error: {e}')
                 continue
 
             href = '{}{}'.format(
@@ -43,8 +46,10 @@ class ZonapropParser(BaseParser):
 
             posting_repository = PostingRepository()
             if posting_repository.get_posting_by_sha(sha):
+                logger.debug(f'Skipping {href}, already in DB')
                 continue
 
+            logger.debug(f'New posting: {location} | {price} | {href}')
             new_posting = Posting(
                 sha=sha,
                 url=href,
