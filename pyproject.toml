@@ -1,0 +1,22 @@
+[project]
+name = "scrappdept"
+version = "0.1.0"
+description = "Scraper de departamentos con notificaciones por Telegram"
+requires-python = ">=3.8"
+dependencies = [
+    "rich>=12.2.0",
+    "typer>=0.9.0",
+    "cloudscraper>=1.2.60",
+    "pydantic>=1.9.0,<2.0.0",
+    "beautifulsoup4>=4.11.1",
+    "sqlmodel>=0.0.6,<0.1.0",
+    "PyYAML>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipdb",
+]
+
+[tool.uv]
+package = false
