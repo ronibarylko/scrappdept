@@ -38,19 +38,23 @@ class ScraperService:
 
     def get_postings_from_scraper(self) -> List[Posting]:
         postings = set()
-        pages = self._pages if self._gateway.paginated else 1
+        max_pages = self._pages if self._gateway.paginated else 1
 
-        for page in range(1, pages + 1):
-            console.log(f'Page {page} of {pages}')
+        for page in range(1, max_pages + 1):
+            console.log(f'Page {page} of at most {max_pages}')
             html = self._gateway.make_request(
                 url=self._url.format(page)
             )
 
             self._parser.get_soup_object(html=html)
-            new_postings = self._parser.extract_data()
+            new_postings, reached_known = self._parser.extract_data()
             console.log(f'Got {len(new_postings)} new postings')
 
             postings = postings.union(new_postings)
+
+            if reached_known:
+                console.log('Reached a known posting — stopping pagination', style='italic')
+                break
 
         return postings
 

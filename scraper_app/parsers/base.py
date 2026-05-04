@@ -1,7 +1,6 @@
 import logging
 from abc import ABC
 from hashlib import sha1
-from typing import Set
 
 from bs4 import BeautifulSoup
 
@@ -18,12 +17,12 @@ class BaseParser(ABC):
         a BeautifulSoup object of the HTML code
         '''
         self.soup = BeautifulSoup(html, 'html.parser')
-    
+
     def get_id(self, text: str) -> str:
         '''Get a SHA1 hash to identify each object.'''
         _id = sha1(text.lower().encode('utf-8')).hexdigest()
         return _id
-    
+
     def sanitize_text(self, text):
         '''
         Sometimes the message comes out weirdly from the html
@@ -31,5 +30,7 @@ class BaseParser(ABC):
         '''
         return ' '.join(text.split())
 
-    def extract_data(self) -> Set[Posting]:
+    def extract_data(self):
+        """Returns (new_postings, reached_known) where reached_known=True means
+        a previously-seen posting was found and pagination should stop."""
         pass

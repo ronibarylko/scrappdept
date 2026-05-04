@@ -1,5 +1,4 @@
 import logging
-from typing import Set
 
 from posting_app.database import Posting, PostingRepository
 from .base import BaseParser
@@ -9,21 +8,20 @@ logger = logging.getLogger(__name__)
 
 class ZonapropParser(BaseParser):
     base_info_class = 'postingCardLayout-module__posting-card-layout'
-    base_info_tag = 'div'
-    link_regex = 'a.go-to-posting'
     price_div_class = 'postingPrices-module__price-container'
     description_div_class = 'postingCard-module__posting-description'
     location_regex = "div.LocationBlock-sc-ge2uzh-1"
     _base_url = 'https://www.zonaprop.com.ar'
 
-    def extract_data(self) -> Set[Posting]:
+    def extract_data(self):
         '''Extracting data and returning list of postings'''
         postings = set()
-        base_info_soaps = self.soup.find_all(
-            self.base_info_tag, class_=self.base_info_class)
+        reached_known = False
+        base_info_soaps = self.soup.find_all("div", class_=self.base_info_class)
 
         logger.debug(f'Found {len(base_info_soaps)} items on page')
 
+        posting_repository = PostingRepository()
         for base_info_soap in base_info_soaps:
             try:
                 link_text = base_info_soap.attrs['data-to-posting']
@@ -34,19 +32,16 @@ class ZonapropParser(BaseParser):
                 logger.debug(f'Skipping item, parse error: {e}')
                 continue
 
-            href = '{}{}'.format(
-                self._base_url,
-                link_text,
-            )
+            href = f'{self._base_url}{link_text}'
             title = self.sanitize_text(link_text)
             sha = self.get_id(href)
             price = price_container.text
             description = self.sanitize_text(description_container.text)
             location = self.sanitize_text(location_container.text)
 
-            posting_repository = PostingRepository()
             if posting_repository.get_posting_by_sha(sha):
-                logger.debug(f'Skipping {href}, already in DB')
+                logger.debug(f'Skipping {href}, already in DB — reached frontier')
+                reached_known = True
                 continue
 
             logger.debug(f'New posting: {location} | {price} | {href}')
@@ -60,4 +55,4 @@ class ZonapropParser(BaseParser):
             )
             postings.add(new_posting)
 
-        return postings
+        return postings, reached_known
