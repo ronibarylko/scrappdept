@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 import typer
 import yaml
@@ -26,8 +26,21 @@ class Config(BaseModel):
     bot_token: Optional[str] = None
     chat_room: Optional[str] = None
     persist: Optional[bool] = False
-    zonaprop_full_url: Optional[str] = None
+    zonaprop_barrios: Optional[List[str]] = None
+    zonaprop_tipos: Optional[List[str]] = None
+    zonaprop_precio_min: Optional[int] = None
+    zonaprop_precio_max: Optional[int] = None
     database_filename: Optional[str] = 'scrapdep'
+
+
+def build_zonaprop_url(tipos: List[str], barrios: List[str], precio_min: int, precio_max: int) -> str:
+    tipos_str = "-".join(tipos)
+    barrios_str = "-".join(barrios)
+    return (
+        f"https://www.zonaprop.com.ar/{tipos_str}-alquiler-{barrios_str}"
+        f"-desde-1-hasta-3-ambientes-{precio_min}-{precio_max}"
+        f"-pesos-orden-publicado-descendente-pagina-{{}}.html"
+    )
 
 
 def main(
@@ -57,10 +70,17 @@ def main(
     create_db_and_tables()
     console.log('Database loaded', style='italic bold green')
 
-    if config.zonaprop_full_url:
+    if config.zonaprop_barrios and config.zonaprop_tipos:
+        zonaprop_url = build_zonaprop_url(
+            tipos=config.zonaprop_tipos,
+            barrios=config.zonaprop_barrios,
+            precio_min=config.zonaprop_precio_min,
+            precio_max=config.zonaprop_precio_max,
+        )
+        console.log(f'Zonaprop URL: [u]{zonaprop_url}[/u]')
         zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
             pages=config.pages,
-            full_url=config.zonaprop_full_url,
+            full_url=zonaprop_url,
         )
         zonaprop_posting_service.scrap_and_create_postings()
 

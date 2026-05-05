@@ -25,6 +25,10 @@ class Posting(SQLModel, table=True):
     description: Optional[str] = None
     sent: bool = Field(default=False, index=True)
 
+    def __str__(self):
+        short_desc = (self.description or '')[:30]
+        return f'Posting(title={self.title}, price={self.price}, location={self.location}, description={short_desc}, url={self.url})'
+
     def __key(self):
         return (self.id, self.sha)
 
