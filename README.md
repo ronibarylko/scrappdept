@@ -31,30 +31,27 @@ Si alguna de estas modificaciones te complica, o te gustaría que te de una mano
 
 1. Saber lo que es una terminal/consola y poder manejarte entre carpetas en una.
 
-2. Vas a necesitar tener instalado Python. Si no lo tenés instalado, [acá te dejo un link](https://tutorial.djangogirls.org/es/python_installation/)
+2. Vas a necesitar tener instalado [uv](https://docs.astral.sh/uv/getting-started/installation/). Si ya tenés Python pero no `uv`, podés instalarlo con:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 3. Clonar este repo. Si no sabés clonar un repositorio, [acá te dejo un link](https://www.taloselectronics.com/blogs/tutoriales/como-descargar-un-proyecto-de-github)
 
 ### Setup
 
-1. Abrir una terminal/consola<s>/tostadora</s> donde puedas usar python.
+1. Abrir una terminal/consola<s>/tostadora</s>.
 
 2. Ir a la carpeta del repositorio en tu computadora.
 
-2. Crear un entorno virtual y activarlo corriendo lo siguiente:
+3. Instalar las dependencias:
 
 ```bash
-python -m venv venv
-source venv/bin/activate
+uv sync
 ```
 
-3. Instalar lo que necesita el comando para funcionar:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Listop, ahora podes empezar a configurar el script!
+4. Listo, ahora podes empezar a configurar el script!
 
 ## Configuración
 
@@ -83,19 +80,26 @@ bot_token: "1234567899:asdasdsadasdasdsaddgZ5RAguDlq67dA" # Token de bot
 chat_room: "1801651256762" # id de chat
 pages: 5 # Cantidad de páginas que ver por link
 database_filename: 'nombre_de_archivo' # Opcional: donde se guardará la base de datos
-zonaprop_full_url: "https://www.zonaprop.com.ar/loquesea-pagina-{}.html" # busqueda zonaprop
-mercadolibre_full_url: "https://inmuebles.mercadolibre.com.ar/departamentos/alquiler/loquesea" # busqueda mercadolibre
-argenprop_full_url: "https://www.argenprop.com/loquesea-pagina-{}" # busqueda argenprop
-la_voz_full_url: "https://clasificados.lavoz.com.ar/inmuebles/loquesea&page={}" # busqueda la voz
-properati_full_url: "https://www.properati.com.ar/s/departamento/alquiler/loquesea&page={}" # busqueda properati
+zonaprop_barrios:
+  - palermo
+  - villa-crespo
+  - colegiales
+zonaprop_tipos:
+  - departamentos
+zonaprop_precio_min: 400_000
+zonaprop_precio_max: 1_000_000
 ```
 
 Donde:
-- `bot_token`: Token del bot de telegram.
-- `chat_room`: id del chat en donde el bot envía los mensajes.
-- `pages` _(opcional, default: `3`)_: Cantidad de páginas en las que querés que vea en tu búsqueda en zonaprop/argenprop.
-- `database_filename` _(opcional, default: `scrapdep`)_: Permite definir el nombre de la base de datos para cada archivo de configuración.
-- `pagina_full_url` _(opcional)_: URL del link en el que buscar.
+- `bot_token` _(requerido para modo telegram)_: Token del bot de telegram.
+- `chat_room` _(requerido para modo telegram)_: id del chat en donde el bot envía los mensajes.
+- `pages` _(opcional, default: `3`)_: Cantidad de páginas que recorre en la búsqueda de ZonaProp.
+- `database_filename` _(opcional, default: `scrapdep`)_: Nombre de la base de datos donde se guardan los inmuebles ya vistos.
+- `zonaprop_barrios` _(opcional)_: Lista de barrios a buscar en ZonaProp (usar el nombre como aparece en la URL del sitio).
+- `zonaprop_tipos` _(opcional)_: Tipos de inmueble, por ejemplo `departamentos`, `casas`.
+- `zonaprop_precio_min` / `zonaprop_precio_max` _(opcional)_: Rango de precio en pesos.
+
+> Si no definís `zonaprop_barrios` o `zonaprop_tipos`, no se scrapea ZonaProp.
 
 2. Profit.
 
@@ -105,19 +109,19 @@ Donde:
 
 2. Ir a la carpeta del repositorio
 
-3. Activar el entorno virtual:
+3. Correr el script pasándole el archivo de configuración:
 
 ```bash
-source venv/bin/activate
+uv run python main.py ./config.yaml
 ```
 
-4. Correr el script pasándole el archivo de configuración
+Por default los resultados se imprimen en consola. Para que los mande por Telegram:
 
 ```bash
-python main.py ./config.yaml
+uv run python main.py ./config.yaml --output telegram
 ```
 
-Listo! Ahora te deberían empezar a llegar mensajes desde tu bot.
+Listo! En modo `telegram` te deberían empezar a llegar mensajes desde tu bot.
 
 ## Agradecimientos
 
