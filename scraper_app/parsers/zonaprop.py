@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class ZonapropParser(BaseParser):
     base_info_class = 'postingCardLayout-module__posting-card-layout'
-    price_div_class = 'postingPrices-module__price-container'
+    price_h2_class = 'postingPrices-module__price'
     description_div_class = 'postingCard-module__posting-description'
     location_regex = "div.LocationBlock-sc-ge2uzh-1"
     _base_url = 'https://www.zonaprop.com.ar'
@@ -25,11 +25,13 @@ class ZonapropParser(BaseParser):
         for base_info_soap in base_info_soaps:
             try:
                 link_text = base_info_soap.attrs['data-to-posting']
-                price_container = base_info_soap.find("div", class_=self.price_div_class)
+                price_container = base_info_soap.find("h2", class_=self.price_h2_class)
                 description_container = base_info_soap.find("h2", class_=self.description_div_class)
-                location_container = base_info_soap.find("div", class_="postingLocations-module__location-block")
+                address_container = base_info_soap.find("h4", class_="postingLocations-module__location-address").text
+                barrio_container = base_info_soap.find("h4", class_="postingLocations-module__location-text").text
+                location_container = f"{address_container} - {barrio_container}"
             except Exception as e:
-                logger.debug(f'Skipping item, parse error: {e}')
+                logger.info(f'Skipping item, parse error: {e}')
                 continue
 
             href = f'{self._base_url}{link_text}'
@@ -37,7 +39,7 @@ class ZonapropParser(BaseParser):
             sha = self.get_id(href)
             price = price_container.text
             description = self.sanitize_text(description_container.text)
-            location = self.sanitize_text(location_container.text)
+            location = self.sanitize_text(location_container)
 
             if posting_repository.get_posting_by_sha(sha):
                 logger.debug(f'Skipping {href}, already in DB — reached frontier')
