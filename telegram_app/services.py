@@ -19,7 +19,13 @@ class TelegramService:
         return msg
 
     def send_telegram_message(self, msg_text: str) -> bool:
-        url = f'https://api.telegram.org/bot{self._bot_token}/sendMessage?chat_id={self._chat_room}&text={msg_text}&disable_web_page_preview=true&parse_mode=html'
-        res = requests.get(url)
-
+        res = requests.post(
+            f"https://api.telegram.org/bot{self._bot_token}/sendMessage",
+            data={
+                "chat_id": self._chat_room,
+                "text": msg_text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            }
+        )
         return res.ok
