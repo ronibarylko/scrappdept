@@ -1,9 +1,13 @@
 import logging
+import re
+from typing import Optional
 
 from posting_app.database import Posting, PostingRepository
 from .base import BaseParser
 
 logger = logging.getLogger(__name__)
+
+_ANTIQUITY_REGEX = re.compile(r"const antiquity\s*=\s*'([^']*)'")
 
 
 class ZonapropParser(BaseParser):
@@ -13,9 +17,13 @@ class ZonapropParser(BaseParser):
     location_regex = "div.LocationBlock-sc-ge2uzh-1"
     _base_url = 'https://www.zonaprop.com.ar'
 
+    def extract_antiquity(self, detail_html: str) -> Optional[str]:
+        match = _ANTIQUITY_REGEX.search(detail_html)
+        return match.group(1) if match else None
+
     def extract_data(self):
         '''Extracting data and returning list of postings'''
-        postings = set()
+        postings = []
         reached_known = False
         base_info_soaps = self.soup.find_all("div", class_=self.base_info_class)
 
@@ -55,6 +63,6 @@ class ZonapropParser(BaseParser):
                 description=description,
                 location=location,
             )
-            postings.add(new_posting)
+            postings.append(new_posting)
 
         return postings, reached_known

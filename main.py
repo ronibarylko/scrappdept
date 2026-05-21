@@ -30,6 +30,7 @@ class Config(BaseModel):
     zonaprop_tipos: Optional[List[str]] = None
     zonaprop_precio_min: Optional[int] = None
     zonaprop_precio_max: Optional[int] = None
+    max_posting_antiquity_days: Optional[int] = 30
     database_filename: Optional[str] = 'scrapdep'
 
 
@@ -81,6 +82,7 @@ def main(
         zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
             pages=config.pages,
             full_url=zonaprop_url,
+            max_antiquity_days=config.max_posting_antiquity_days,
         )
         zonaprop_posting_service.scrap_and_create_postings()
 

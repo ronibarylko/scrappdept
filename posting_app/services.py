@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rich.console import Console
 
 from scraper_app.services import ScraperService, ScraperServiceFactory
@@ -25,11 +27,13 @@ class PostingServiceFactory:
     def build_for_zonaprop(
         cls,
         pages: int,
-        full_url: str
+        full_url: str,
+        max_antiquity_days: Optional[int] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_zonaprop(
             pages=pages,
             full_url=full_url,
+            max_antiquity_days=max_antiquity_days,
         )
         return PostingService(scraper_service=scrapper_service)
 
@@ -37,11 +41,13 @@ class PostingServiceFactory:
     def build_for_argenprop(
         cls,
         pages: int,
-        full_url: str
+        full_url: str,
+        max_antiquity_days: Optional[int] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_argenprop(
             pages=pages,
             full_url=full_url,
+            max_antiquity_days=max_antiquity_days,
         )
         return PostingService(scraper_service=scrapper_service)
 
@@ -49,11 +55,13 @@ class PostingServiceFactory:
     def build_for_mercadolibre(
         cls,
         pages: int,
-        full_url: str
+        full_url: str,
+        max_antiquity_days: Optional[int] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_mercadolibre(
             pages=pages,
             full_url=full_url,
+            max_antiquity_days=max_antiquity_days,
         )
         return PostingService(scraper_service=scrapper_service)
 
@@ -61,11 +69,13 @@ class PostingServiceFactory:
     def build_for_la_voz(
         cls,
         pages: int,
-        full_url: str
+        full_url: str,
+        max_antiquity_days: Optional[int] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_la_voz(
             pages=pages,
             full_url=full_url,
+            max_antiquity_days=max_antiquity_days,
         )
         return PostingService(scraper_service=scrapper_service)
 
@@ -73,10 +83,12 @@ class PostingServiceFactory:
     def build_for_properati(
         cls,
         pages: int,
-        full_url: str
+        full_url: str,
+        max_antiquity_days: Optional[int] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_properati(
             pages=pages,
             full_url=full_url,
+            max_antiquity_days=max_antiquity_days,
         )
         return PostingService(scraper_service=scrapper_service)

@@ -1,10 +1,9 @@
 import logging
 from abc import ABC
 from hashlib import sha1
+from typing import Optional
 
 from bs4 import BeautifulSoup
-
-from posting_app.database import Posting
 
 logger = logging.getLogger(__name__)
 
@@ -34,3 +33,8 @@ class BaseParser(ABC):
         """Returns (new_postings, reached_known) where reached_known=True means
         a previously-seen posting was found and pagination should stop."""
         pass
+
+    def extract_antiquity(self, detail_html: str) -> Optional[str]:
+        """Extracts the antiquity text from a posting's detail page HTML.
+        Returns None by default; parsers can override."""
+        return None

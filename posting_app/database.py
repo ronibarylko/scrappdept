@@ -1,3 +1,4 @@
+import re
 from typing import Optional, List
 
 from sqlmodel import (
@@ -9,10 +10,12 @@ from sqlmodel import (
 )
 from sqlmodel.sql.expression import Select, SelectOfScalar
 
-# Avoiding a warning. More info at: 
+# Avoiding a warning. More info at:
 # https://github.com/tiangolo/sqlmodel/issues/189
 SelectOfScalar.inherit_cache = True
 Select.inherit_cache = True
+
+_ANTIQUITY_DAYS_REGEX = re.compile(r"hace\s+(\d+)\s+d[ií]as?")
 
 
 class Posting(SQLModel, table=True):
@@ -23,11 +26,18 @@ class Posting(SQLModel, table=True):
     price: Optional[str] = None
     location: Optional[str] = None
     description: Optional[str] = None
+    antiquity: Optional[str] = None
     sent: bool = Field(default=False, index=True)
+
+    def antiquity_days(self) -> Optional[int]:
+        if not self.antiquity:
+            return None
+        match = _ANTIQUITY_DAYS_REGEX.search(self.antiquity)
+        return int(match.group(1)) if match else None
 
     def __str__(self):
         short_desc = (self.description or '')[:30]
-        return f'Posting(title={self.title}, price={self.price}, location={self.location}, description={short_desc}, url={self.url})'
+        return f'Posting(title={self.title}, price={self.price}, location={self.location}, description={short_desc}, antiquity={self.antiquity}, url={self.url})'
 
     def __key(self):
         return (self.id, self.sha)
