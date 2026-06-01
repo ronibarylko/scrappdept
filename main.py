@@ -30,16 +30,27 @@ class Config(BaseModel):
     zonaprop_tipos: Optional[List[str]] = None
     zonaprop_precio_min: Optional[int] = None
     zonaprop_precio_max: Optional[int] = None
+    zonaprop_min_cant_ambientes: Optional[int] = None
     max_posting_antiquity_days: Optional[int] = 30
     database_filename: Optional[str] = 'scrapdep'
 
 
-def build_zonaprop_url(tipos: List[str], barrios: List[str], precio_min: int, precio_max: int) -> str:
+def build_zonaprop_url(
+        tipos: List[str],
+        barrios: List[str],
+        precio_min: int,
+        precio_max: int,
+        min_cant_ambientes: Optional[int] = None,
+) -> str:
     tipos_str = "-".join(tipos)
     barrios_str = "-".join(barrios)
+    if min_cant_ambientes is not None:
+        ambientes_str = f"mas-de-{min_cant_ambientes}-ambientes"
+    else:
+        ambientes_str = "desde-1-hasta-3-ambientes"
     return (
         f"https://www.zonaprop.com.ar/{tipos_str}-alquiler-{barrios_str}"
-        f"-desde-1-hasta-3-ambientes-{precio_min}-{precio_max}"
+        f"-{ambientes_str}-{precio_min}-{precio_max}"
         f"-pesos-orden-publicado-descendente-pagina-{{}}.html"
     )
 
@@ -77,6 +88,7 @@ def main(
             barrios=config.zonaprop_barrios,
             precio_min=config.zonaprop_precio_min,
             precio_max=config.zonaprop_precio_max,
+            min_cant_ambientes=config.zonaprop_min_cant_ambientes,
         )
         console.log(f'Zonaprop URL: [u]{zonaprop_url}[/u]')
         zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(

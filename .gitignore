@@ -11,3 +11,5 @@ config.yaml
 
 .idea/
 *.iml
+cron.log
+run.sh
