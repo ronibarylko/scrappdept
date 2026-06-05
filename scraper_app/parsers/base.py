@@ -17,6 +17,14 @@ class BaseParser(ABC):
         '''
         self.soup = BeautifulSoup(html, 'html.parser')
 
+    def normalize_url(self, url: str) -> str:
+        '''
+        Strip query string and fragment from a URL so the same posting
+        reached via different listings (e.g. ?n_pos=29 vs ?n_pos=30)
+        resolves to a single canonical URL.
+        '''
+        return url.split('?', 1)[0].split('#', 1)[0]
+
     def get_id(self, text: str) -> str:
         '''Get a SHA1 hash to identify each object.'''
         _id = sha1(text.lower().encode('utf-8')).hexdigest()

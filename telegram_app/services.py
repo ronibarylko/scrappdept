@@ -12,9 +12,11 @@ class TelegramService:
         self._bot_token = bot_token
         self._chat_room = chat_room
 
-    def format_posting_to_message(self, posting: Posting) -> str:
+    def format_posting_to_message(self, posting: Posting, config_name: str = None) -> str:
         '''Formats the object into a Telegram message.'''
         msg = f'<a href="{posting.url}"><b>{posting.location}</b> </a>\n<i>{posting.price}</i>\n<i>{posting.antiquity}</i>'
+        if config_name:
+            msg += f'\n<i>{config_name}</i>'
 
         return msg
 

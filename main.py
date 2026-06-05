@@ -31,8 +31,13 @@ class Config(BaseModel):
     zonaprop_precio_min: Optional[int] = None
     zonaprop_precio_max: Optional[int] = None
     zonaprop_min_cant_ambientes: Optional[int] = None
+    zonaprop_cant_ambientes: Optional[int] = None
+    zonaprop_con_balcon: Optional[bool] = None
+    zonaprop_min_m2_cubiertos: Optional[int] = None
     max_posting_antiquity_days: Optional[int] = 30
     database_filename: Optional[str] = 'scrapdep'
+    config_name: Optional[str] = None
+    ignore_locations: Optional[List[str]] = None
 
 
 def build_zonaprop_url(
@@ -41,16 +46,24 @@ def build_zonaprop_url(
         precio_min: int,
         precio_max: int,
         min_cant_ambientes: Optional[int] = None,
+        cant_ambientes: Optional[int] = None,
+        con_balcon: Optional[bool] = None,
+        min_m2_cubiertos: Optional[int] = None,
 ) -> str:
     tipos_str = "-".join(tipos)
     barrios_str = "-".join(barrios)
-    if min_cant_ambientes is not None:
+    if cant_ambientes is not None:
+        ambiente_word = "ambiente" if cant_ambientes == 1 else "ambientes"
+        ambientes_str = f"{cant_ambientes}-{ambiente_word}"
+    elif min_cant_ambientes is not None:
         ambientes_str = f"mas-de-{min_cant_ambientes}-ambientes"
     else:
         ambientes_str = "desde-1-hasta-3-ambientes"
+    balcon_str = "con-balcon-" if con_balcon else ""
+    m2_str = f"-mas-{min_m2_cubiertos}-m2-cubiertos" if min_m2_cubiertos is not None else ""
     return (
         f"https://www.zonaprop.com.ar/{tipos_str}-alquiler-{barrios_str}"
-        f"-{ambientes_str}-{precio_min}-{precio_max}"
+        f"-{balcon_str}{ambientes_str}{m2_str}-{precio_min}-{precio_max}"
         f"-pesos-orden-publicado-descendente-pagina-{{}}.html"
     )
 
@@ -89,12 +102,16 @@ def main(
             precio_min=config.zonaprop_precio_min,
             precio_max=config.zonaprop_precio_max,
             min_cant_ambientes=config.zonaprop_min_cant_ambientes,
+            cant_ambientes=config.zonaprop_cant_ambientes,
+            con_balcon=config.zonaprop_con_balcon,
+            min_m2_cubiertos=config.zonaprop_min_m2_cubiertos,
         )
         console.log(f'Zonaprop URL: [u]{zonaprop_url}[/u]')
         zonaprop_posting_service = PostingServiceFactory.build_for_zonaprop(
             pages=config.pages,
             full_url=zonaprop_url,
             max_antiquity_days=config.max_posting_antiquity_days,
+            ignore_locations=config.ignore_locations,
         )
         zonaprop_posting_service.scrap_and_create_postings()
 
@@ -118,7 +135,7 @@ def main(
             chat_room=config.chat_room,
         )
         for posting in unsent_postings:
-            msg_text = telegram_service.format_posting_to_message(posting)
+            msg_text = telegram_service.format_posting_to_message(posting, config.config_name)
             sent = telegram_service.send_telegram_message(msg_text)
             if sent:
                 posting_repository.set_posting_as_sent(posting.sha)

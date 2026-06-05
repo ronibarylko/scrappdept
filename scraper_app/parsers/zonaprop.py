@@ -42,7 +42,7 @@ class ZonapropParser(BaseParser):
                 logger.info(f'Skipping item, parse error: {e}')
                 continue
 
-            href = f'{self._base_url}{link_text}'
+            href = self.normalize_url(f'{self._base_url}{link_text}')
             title = self.sanitize_text(link_text)
             sha = self.get_id(href)
             price = price_container.text

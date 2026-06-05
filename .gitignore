@@ -5,11 +5,11 @@ __pycache__/
 scrapdep/
 venv/
 config.json
-config.yaml
+config*.yaml
 *.db
 *.sqlite3
 
 .idea/
 *.iml
-cron.log
-run.sh
+cron*.log
+run*.sh
