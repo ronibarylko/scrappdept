@@ -61,15 +61,11 @@ uv sync
 
 2. No pierdas estas cosas, las vamos a necesitar en el futuro.
 
-### Links de Búsqueda
+### Filtros de Búsqueda
 
-Es necesario decirle al script los filtros que vos pones cuando buscas inmuebles y lo vamos a hacer pasandole el link generado por las páginas cuando agregas los filtros a la búsqueda.
+A diferencia del proyecto original, en este fork **no hace falta armar ni pegar el link de ZonaProp a mano**. El script construye la URL de búsqueda por vos a partir de los filtros que ponés en el archivo de configuración (barrios, tipos, rango de precio, cantidad de ambientes, etc.).
 
-1. Buscá en las páginas habilitadas que desees con los filtros que queres y andá a la segunda página de la búsqueda. (Zona, si es casa o depto, dormitorios, lo que quieras)
-
-2. Copiá el link que te sale cuando haces esa busqueda, pegalo en algún lado y fijate que al final puede decir algo cómo `-pagina-2.html` borrá el número de página y pone `{}`. El link se debería terminar con algo así `-pagina-{}.html`, `-pagina-{}` o `&page={}` (no está implementada la paginación para mercadolibre así que no es necesario hacer esto último para ese link).
-
-3. No pierdas estas cosas, las vamos a necesitar en el futuro.
+Lo único que necesitás tener a mano son los nombres de los barrios tal cual aparecen en la URL de ZonaProp (por ejemplo `villa-crespo`, `villa-urquiza`, `nunez`). El resto lo definís con las claves del `config.yaml` que se describen más abajo.
 
 ### Archivo de Configuración
 
@@ -78,28 +74,47 @@ Es necesario decirle al script los filtros que vos pones cuando buscas inmuebles
 ```yaml
 bot_token: "1234567899:asdasdsadasdasdsaddgZ5RAguDlq67dA" # Token de bot
 chat_room: "1801651256762" # id de chat
-pages: 5 # Cantidad de páginas que ver por link
+pages: 5 # Opcional: cantidad de páginas que ver por link
 database_filename: 'nombre_de_archivo' # Opcional: donde se guardará la base de datos
+config_name: "2 ambientes" # Opcional: nombre que se muestra en el mensaje de Telegram
 zonaprop_barrios:
   - palermo
   - villa-crespo
   - colegiales
 zonaprop_tipos:
   - departamentos
+  - ph
 zonaprop_precio_min: 400_000
 zonaprop_precio_max: 1_000_000
+zonaprop_min_cant_ambientes: 2 # Opcional: filtra por "más de N ambientes"
+max_posting_antiquity_days: 10 # Opcional: ignora publicaciones más viejas que N días
+ignore_locations: # Opcional: descarta publicaciones cuya dirección matchee estas palabras
+  - "libertador 710"
 ```
 
 Donde:
+
+**Telegram**
 - `bot_token` _(requerido para modo telegram)_: Token del bot de telegram.
 - `chat_room` _(requerido para modo telegram)_: id del chat en donde el bot envía los mensajes.
+- `config_name` _(opcional)_: Texto identificatorio que se incluye en cada mensaje de Telegram (útil si corrés varias configs apuntando al mismo grupo).
+
+**Generales**
 - `pages` _(opcional, default: `3`)_: Cantidad de páginas que recorre en la búsqueda de ZonaProp.
 - `database_filename` _(opcional, default: `scrapdep`)_: Nombre de la base de datos donde se guardan los inmuebles ya vistos.
-- `zonaprop_barrios` _(opcional)_: Lista de barrios a buscar en ZonaProp (usar el nombre como aparece en la URL del sitio).
-- `zonaprop_tipos` _(opcional)_: Tipos de inmueble, por ejemplo `departamentos`, `casas`.
-- `zonaprop_precio_min` / `zonaprop_precio_max` _(opcional)_: Rango de precio en pesos.
+- `max_posting_antiquity_days` _(opcional, default: `30`)_: Descarta publicaciones con una antigüedad mayor a esta cantidad de días.
+- `ignore_locations` _(opcional)_: Lista de palabras/direcciones; cualquier publicación cuya dirección las contenga se ignora
 
-> Si no definís `zonaprop_barrios` o `zonaprop_tipos`, no se scrapea ZonaProp.
+**Filtros de ZonaProp** (con estos el script arma la URL de búsqueda)
+- `zonaprop_barrios` _(opcional)_: Lista de barrios a buscar (usar el nombre como aparece en la URL del sitio).
+- `zonaprop_tipos` _(opcional)_: Tipos de inmueble, por ejemplo `departamentos`, `casas`, `ph`.
+- `zonaprop_precio_min` / `zonaprop_precio_max` _(opcional)_: Rango de precio en pesos.
+- `zonaprop_cant_ambientes` _(opcional)_: Cantidad **exacta** de ambientes (por ejemplo `1` para monoambientes).
+- `zonaprop_min_cant_ambientes` _(opcional)_: Cantidad **mínima** de ambientes ("más de N ambientes"). Si definís `zonaprop_cant_ambientes`, este se ignora.
+- `zonaprop_con_balcon` _(opcional)_: Si es `true`, solo trae publicaciones con balcón.
+- `zonaprop_min_m2_cubiertos` _(opcional)_: Superficie cubierta mínima en m².
+
+> Si no definís `zonaprop_barrios` **y** `zonaprop_tipos`, no se scrapea ZonaProp.
 
 2. Profit.
 
