@@ -37,7 +37,6 @@ class Config(BaseModel):
     max_posting_antiquity_days: Optional[int] = 30
     database_filename: Optional[str] = 'scrapdep'
     config_name: Optional[str] = None
-    ignore_locations: Optional[List[str]] = None
 
 
 def build_zonaprop_url(
@@ -111,7 +110,6 @@ def main(
             pages=config.pages,
             full_url=zonaprop_url,
             max_antiquity_days=config.max_posting_antiquity_days,
-            ignore_locations=config.ignore_locations,
         )
         zonaprop_posting_service.scrap_and_create_postings()
 

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from rich.console import Console
 
@@ -29,13 +29,11 @@ class PostingServiceFactory:
         pages: int,
         full_url: str,
         max_antiquity_days: Optional[int] = None,
-        ignore_locations: Optional[List[str]] = None,
     ) -> PostingService:
         scrapper_service = ScraperServiceFactory.build_for_zonaprop(
             pages=pages,
             full_url=full_url,
             max_antiquity_days=max_antiquity_days,
-            ignore_locations=ignore_locations,
         )
         return PostingService(scraper_service=scrapper_service)
 

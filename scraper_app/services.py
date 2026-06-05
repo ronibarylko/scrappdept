@@ -1,4 +1,3 @@
-import unicodedata
 from typing import List, Optional
 
 from rich.console import Console
@@ -24,33 +23,6 @@ from .parsers import (
 console = Console()
 
 
-def _normalize(text: str) -> str:
-    '''Lowercase, strip accents and collapse whitespace for fuzzy matching.'''
-    text = unicodedata.normalize('NFKD', text)
-    text = ''.join(c for c in text if not unicodedata.combining(c))
-    return ' '.join(text.lower().split())
-
-
-def location_is_ignored(
-        location: Optional[str],
-        ignore_locations: Optional[List[str]],
-) -> bool:
-    '''
-    Returns True when `location` matches any entry in `ignore_locations`.
-    An entry matches if all of its (accent-insensitive) words appear in the
-    location, so "libertador 710" ignores "Av. del Libertador 710 - Núñez"
-    regardless of word order or extra words.
-    '''
-    if not location or not ignore_locations:
-        return False
-    normalized_location = _normalize(location)
-    for entry in ignore_locations:
-        tokens = _normalize(entry).split()
-        if tokens and all(token in normalized_location for token in tokens):
-            return True
-    return False
-
-
 class ScraperService:
     def __init__(
             self,
@@ -59,14 +31,12 @@ class ScraperService:
             gateway: BaseGateway,
             parser: BaseParser,
             max_antiquity_days: Optional[int] = None,
-            ignore_locations: Optional[List[str]] = None,
     ):
         self._pages = pages
         self._url = url
         self._gateway = gateway
         self._parser = parser
         self._max_antiquity_days = max_antiquity_days
-        self._ignore_locations = ignore_locations
 
     def get_postings_from_scraper(self) -> List[Posting]:
         postings = []
@@ -84,14 +54,6 @@ class ScraperService:
             console.log(f'Got {len(new_postings)} new postings')
 
             for posting in new_postings:
-                if location_is_ignored(posting.location, self._ignore_locations):
-                    console.log(
-                        f'Ignoring posting at "{posting.location}" '
-                        '(matches ignore_locations)',
-                        style='yellow',
-                    )
-                    continue
-
                 detail_html = self._gateway.make_request(url=posting.url)
                 posting.antiquity = self._parser.extract_antiquity(detail_html)
                 console.log(f'Antiquity for {posting.url}: {posting.antiquity}')
@@ -129,7 +91,6 @@ class ScraperServiceFactory:
             pages: int,
             full_url: str,
             max_antiquity_days: Optional[int] = None,
-            ignore_locations: Optional[List[str]] = None,
     ) -> ScraperService:
         return ScraperService(
             pages=pages,
@@ -137,7 +98,6 @@ class ScraperServiceFactory:
             gateway=ZonapropGateway(),
             parser=ZonapropParser(),
             max_antiquity_days=max_antiquity_days,
-            ignore_locations=ignore_locations,
         )
 
     @classmethod

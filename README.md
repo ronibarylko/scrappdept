@@ -88,8 +88,6 @@ zonaprop_precio_min: 400_000
 zonaprop_precio_max: 1_000_000
 zonaprop_min_cant_ambientes: 2 # Opcional: filtra por "más de N ambientes"
 max_posting_antiquity_days: 10 # Opcional: ignora publicaciones más viejas que N días
-ignore_locations: # Opcional: descarta publicaciones cuya dirección matchee estas palabras
-  - "libertador 710"
 ```
 
 Donde:
@@ -103,7 +101,6 @@ Donde:
 - `pages` _(opcional, default: `3`)_: Cantidad de páginas que recorre en la búsqueda de ZonaProp.
 - `database_filename` _(opcional, default: `scrapdep`)_: Nombre de la base de datos donde se guardan los inmuebles ya vistos.
 - `max_posting_antiquity_days` _(opcional, default: `30`)_: Descarta publicaciones con una antigüedad mayor a esta cantidad de días.
-- `ignore_locations` _(opcional)_: Lista de palabras/direcciones; cualquier publicación cuya dirección las contenga se ignora
 
 **Filtros de ZonaProp** (con estos el script arma la URL de búsqueda)
 - `zonaprop_barrios` _(opcional)_: Lista de barrios a buscar (usar el nombre como aparece en la URL del sitio).
